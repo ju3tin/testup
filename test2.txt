@@ -1,0 +1,38 @@
+import { useEffect, useState } from "react";
+import { useWallet } from "@solana/wallet-adapter-react";
+
+export default function NavBar() {
+  const { publicKey } = useWallet();  // user's connected wallet
+  const [adminKey, setAdminKey] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/admin") // your backend endpoint
+      .then(res => res.json())
+      .then(data => setAdminKey(data.adminPublicKey));
+  }, []);
+
+  useEffect(() => {
+    if (!publicKey || !adminKey) return;
+
+    // Compare keys
+    if (publicKey.toString() === adminKey) {
+      setIsAdmin(true);
+    } else {
+      setIsAdmin(false);
+    }
+  }, [publicKey, adminKey]);
+
+  return (
+    <nav className="navbar">
+      <a href="/">Home</a>
+
+      {isAdmin && (
+        <>
+          <a href="/admin/dashboard">Admin Dashboard</a>
+          <a href="/admin/settings">Admin Settings</a>
+        </>
+      )}
+    </nav>
+  );
+}
